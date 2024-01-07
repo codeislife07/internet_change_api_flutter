@@ -18,24 +18,32 @@ class ApiService{
 
     //check connection and show no internet screen if device is not connected with any network data/wifi
     final connectivityResult = await (Connectivity().checkConnectivity());
-    if(connectivityResult==ConnectivityResult.none){
+    dynamic data() async {
       var data=await Navigator.push(globalKey.currentContext!, MaterialPageRoute(builder: (_)=>NoInternetScreen()));
       if(data==true){
         return sendRequest(method: method, url: url);
       }
     }
+    if(connectivityResult==ConnectivityResult.none){
+      return data();
+    }
 
     http.Response? response;
-    switch(method){
-      case "get":
-        response=await http.get(Uri.parse(url));
-        break;
-      default:
-        break;
-    }
+   try{
+     switch(method){
+       case "get":
+         response=await http.get(Uri.parse(url));
+         break;
+       default:
+         break;
+     }
+   }catch(e){
+     print("Exception ${e}");
+   }
 
     if(response==null){
       //api not call due to poor network connection
+     return data();
     }
     switch(response?.statusCode??0){
       case 200:
